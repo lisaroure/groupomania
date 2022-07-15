@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
-mongoose.
-connect(
+mongoose
+.connect(
     "mongodb+srv://" + process.env.DB_USER_PASS + "@clustergroupo.sp36ykj.mongodb.net/Groupomania",
     {
         useNewUrlParser: true,
