@@ -1,12 +1,58 @@
 const mongoose = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
+const bcrypt= require('bcrypt');
 
-const userShema = mongoose.Schema({
-    pseudo: { type: String, required: true, unique: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true }
-});
+const userSchema = mongoose.Schema({
+    pseudo: {
+        type: String,
+        minLenght: 3,
+        maxLenght: 55,
+        required: true,
+        unique: true,
+        trim: true,
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    password: {
+        type: String,
+        required: true,
+        max: 1032,
+        minLenght: 6,
+        maxLenght: 10,
+    },
+    picture: {
+        type: String,
+        default: "./uploads/profil/random-user.png"
+    },
+    bio: {
+        type: String,
+        max: 1024,
+    },
+    followers: {
+        type: [String]
+    },
+    following: {
+        type: [String]
+    },
+    likes: {
+        type: [String]
+    }
+},
+    {
+        timestamps: true,
+    }
+);
 
-userShema.plugin(uniqueValidator);
+//play function before save into display: 'block',
+userSchema.pre("save", async function(next) {
+    const salt =  await bcrypt.genSalt();
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+})
 
-module.exports = mongoose.model('user', userShema);
+userSchema.plugin(uniqueValidator);
+
+module.exports = mongoose.model('user', userSchema);

@@ -10,4 +10,4 @@ const postSchema = mongoose.Schema({
     usersDisliked: { type: [String] },
 });
 
-module.exports = mongoose.model('Thing', postSchema);
+module.exports = mongoose.model('Post', postSchema);

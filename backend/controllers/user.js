@@ -1,50 +1,114 @@
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+const { Types } = require('mongoose');
+const User = require('../models/User');
+const ObjetId = require('mongoose').Types.ObjetId;
 
-const User = require('../models/user');
-
-exports.signup = (req, res, next) => {
-    console.log("signup!")
-    bcrypt.hash(req.body.password, 10)
-        .then(hash => {
-            const user = new User({
-                pseudo: req.body.pseudo,
-                email: req.body.email,
-                password: hash
-            });
-            console.log(User)
-            user.save()
-                .then(() => res.status(201).json({ message: 'Utilisateur créé !' }))
-                .catch(error => res.status(400).json({ error }));
-        })
-        .catch(error => {
-            console.log(error)
-            res.status(500).json({ error })
-
-        });
+// Afficher tous les utilisateurs
+exports.getAllUsers = async (req, res, next) => {
+    const users = await User.find().select('-password');
+    res.status(200).json(users)
 }
-exports.login = (req, res, next) => {
-    User.findOne({ email: req.body.email })
-        .then(user => {
-            if (!user) {
-                return res.status(401).json({ error: 'Login/Mot de passe incorrects' });
+
+// Afficher les infos d'utilisateur
+exports.userInfos = (req, res, next) => {
+    console.log(req.params);
+    if (!ObjetId.isValid(req.params.id))
+        return res.status(400).send('ID unknown :' + req.params.id)
+
+    User.findById(req.params.id, (err, docs) => {
+        if (!err) res.send(docs);
+        else console.log('ID unknown :' + err);
+    }).select('-password')
+        .then((users) => res.status(200).json(users))
+        .catch(error => res.status(400).json({ error: error }))
+}
+
+// Mettre à jour le profil utilisateur
+exports.updateUser = (req, res, next) => {
+    User.updateOneAndUpdate(
+        { _id: req.params.id },
+        {
+            $set: {
+                bio: req.body.bio
             }
-            bcrypt.compare(req.body.password, user.password)
-                .then(valid => {
-                    if (!valid) {
-                        return res.status(401).json({ error: 'Login/Mot de passe incorrects' });
+        },
+        { new: true, upsert: true, setDefaultsInsert: true },
+        (err, docs) => {
+            if (!err) return res.send(docs);
+            if (err) return res.status(500).send({ message: err });
+        }
+    )
+        .then(() => res.status(200).json({ message: 'Profil modifié.' }))
+        .catch(error => res.status(400).json({ error }))
+}
+
+// Supprimer un utilisateur
+exports.deleteUser = async (req, res, next) => {
+    if (!ObjetId.isValid(req.params.id))
+        return res.status(400).send('ID unknown :' + req.params.id)
+
+    User.remove({ _id: req.params.id }).exec()
+    try {
+        await User.deleteOne({ _id: req.params.id });
+        res.status(200).json({ message: 'Successfully deleted.' });
+    } catch (err) {
+        return res.status(500).json({ message: err });
+    }
+
+    // Follow user
+    exports.follow = async (req, res, next) => {
+        if (!ObjetId.isValid(req.params.id) || !ObjetId.isValid(req.body.idToFollow))
+            return res.status(400).send('ID unknown :' + req.params.id)
+        try {
+            //Ajout à la liste de followers
+            await User.findByIdAndUpdate(
+                req.params.id,
+                { $addToSet: { following: req.body.idToFollow } },
+                { new: true, upsert: true },
+                (err, docs) => {
+                    if (!err) res.status(201)(docs);
+                    else return res.status(400).json(err);
+                }
+            );
+            // Ajout à la liste de following
+            await User.findByIdAndUpdate(
+                req.body.idToFollow,
+                { $addToSet: { followers: req.params.id } },
+                { new: true, upsert: true },
+                (err, docs) => {
+                    //if (!err) res.status(201)(docs);
+                    if (err) return res.status(400).json(err);
+                }
+            )
+        } catch (err) {
+            return res.status(500).json({ message: err });
+        }
+
+        // Unfollowed user
+        exports.unfollow = async (req, res, next) => {
+            if (!ObjetId.isValid(req.params.id) || !ObjetId.isValid(req.body.idToUnfollow))
+                return res.status(400).send('ID unknown :' + req.params.id)
+            try {
+                await User.findByIdAndUpdate(
+                    req.params.id,
+                    { $pull: { following: req.body.idToUnfollow } },
+                    { new: true, upsert: true },
+                    (err, docs) => {
+                        if (!err) res.status(201)(docs);
+                        else return res.status(400).json(err);
                     }
-                    console.log('login')
-                    res.status(200).json({
-                        userId: user._id,
-                        token: jwt.sign(
-                            { userId: user._id },
-                            'RANDOM_TOKEN_SECRET',
-                            { expiresIn: '24h' }
-                        )
+                );
+                // Ajout à la liste de following
+                await User.findByIdAndUpdate(
+                    req.body.idToUnfollow,
+                    { $pull: { followers: req.params.id } },
+                    { new: true, upsert: true },
+                    (err, docs) => {
+                        //if (!err) res.status(201)(docs);
+                        if (err) return res.status(400).json(err);
                     });
-                })
-                .catch(error => res.status(500).json({ error }));
-        })
-        .catch(error => res.status(500).json({ error }));
-};
+            } catch (err) {
+                return res.status(500).json({ message: err });
+            }
+        }
+    }
+}

@@ -1,4 +1,4 @@
-const Sauce = require('../models/Post');
+const Post = require('../models/Post');
 const fs = require('fs');
 
 // Posts existants
@@ -38,7 +38,7 @@ Post.updateOne({ _id: req.params.id }, { ...postObject, _id: req.params.id })
 // Supprimer un post
 exports.deletePost = (req, res, next) => {
 Post.findOne({ _id: req.params.id })
-    .then(sauce => {
+    .then(post => {
         const filename = post.imageUrl.split('/images/')[1]
         fs.unlink(`images/${filename}`, () => {
             Post.deleteOne({ _id: req.params.id })
@@ -52,7 +52,7 @@ Post.findOne({ _id: req.params.id })
 exports.likeOrNot = (req, res, next) => {
 if (req.body.like === 1) {
     Post.updateOne({ _id: req.params.id }, { $inc: { likes: req.body.like++ }, $push: { usersLiked: req.body.userId } })
-        .then((sauce) => res.status(200).json({ message: 'Like enrigistré !' }))
+        .then((post) => res.status(200).json({ message: 'Like enrigistré !' }))
         .catch(error => res.status(400).json({ error }))
 }
 // Dislike utilisateur

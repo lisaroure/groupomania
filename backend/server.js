@@ -1,14 +1,16 @@
-const express =  require('express');
+const express = require('express');
+const bodyParser = require('body-parser');
 const userRoutes = require('./routes/user');
-require('dotenv').config({path: './config/.env'});
+require('dotenv').config({ path: './config/.env' });
 require('./config/db');
 const app = express();
 
+// Traiter la data en transit d'un point A à un point B
+app.use(bodyParser.urlencoded({ extended: true }))
 
 
 
-
-//Router
+//Routes
 app.use('/api/user', userRoutes);
 
 //Server 
