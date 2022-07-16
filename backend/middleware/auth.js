@@ -1,15 +1,25 @@
 const jwt = require('jsonwebtoken');
-const user = require('../models/user');
+const User = require('../models/User');
 
-module.exports = (req, res, next) => {
+module.exports.checkUser = (req, res, next) => {
     try {
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
-        const userId = decodedToken.userId;
-        req.auth = { userId: userId };
-        if (req.body.userId && req.body.userId !== userId) {
-            throw 'Invalid user ID';
+        const token = req.cookies.jwt.split(' ')[1];
+        const decodedToken = jwt;
+        if (token) {
+            jwt.verify(token, process.env.TOKEN_SECRET, async(err, decodedToken) => {
+                if (err) {
+                    res.locals.user = null;
+                    res.cookie('jwt', '', {maxAge: 1 });
+                    next();
+                } else {
+                    let user = await User.findById(decodedToken.id);
+                    res.locals.user = user;
+                    console.log(res.locals.user);
+                    next();
+                }
+            })
         } else {
+            res.locals.user = null;
             next();
         }
     } catch (error) {
