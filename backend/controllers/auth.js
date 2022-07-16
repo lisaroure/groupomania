@@ -17,7 +17,7 @@ exports.signUp = async (req, res, next) => {
         const user = await User.create({ pseudo, email, password });
         res.status(201).json({ user: user._id })
     } catch (err) {
-        const errors = signUpErros(err);
+        const errors = signUpErrors(err);
         res.status(200).send({ errors })
     }
     bcrypt.hash(req.body.password, 10)

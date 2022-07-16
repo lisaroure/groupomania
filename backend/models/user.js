@@ -34,13 +34,13 @@ const userSchema = mongoose.Schema({
         max: 1024,
     },
     followers: {
-        type: [String]
+        type: [String],
     },
     following: {
-        type: [String]
+        type: [String],
     },
     likes: {
-        type: [String]
+        type: [String],
     }
 },
     {
@@ -68,4 +68,4 @@ userSchema.statics.login = async function(email,password) {
     throw Error('Incorrect email')
 }
 
-module.exports = mongoose.model('user', userSchema);
+module.exports = mongoose.model('User', userSchema);

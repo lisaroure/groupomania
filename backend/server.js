@@ -1,29 +1,47 @@
-const express = require('express');
-const cookieParser = require('cookie-parser');
-const bodyParser = require('body-parser');
+const http = require('http');
+const app = require('./app');
 
-const userRoutes = require('./routes/user');
-const postRoutes = require('./routes/post');
+const normalizePort = val => {
+    const port = parseInt(val, 10);
 
-require('dotenv').config({ path: './config/.env' });
-require('./config/db');
-const { checkUser, requireAuth } = require('./middleware/auth');
-const app = express();
+    if (isNaN(port)) {
+        return val;
+    }
+    if (port >= 0) {
+        return port;
+    }
+    return false;
+};
+const port = normalizePort(process.env.PORT || '3000');
+app.set('port', port);
 
-// Traiter la data en transit d'un point A à un point B
-app.use(bodyParser.urlencoded({ extended: true }))
-app.use(cookieParser());
+const errorHandler = error => {
+    if (error.syscall !== 'listen') {
+        throw error;
+    }
+    const address = server.address();
+    const bind = typeof address === 'string' ? 'pipe ' + address : 'port: ' + port;
+    switch (error.code) {
+        case 'EACCES':
+            console.error(bind + ' requires elevated privileges.');
+            process.exit(1);
+            break;
+        case 'EADDRINUSE':
+            console.error(bind + ' is already in use.');
+            process.exit(1);
+            break;
+        default:
+            throw error;
+    }
+};
 
-// JWT
-app.get('*', checkUser);
-app.get('/jwtid', requireAuth, (req, res) => {
-    res.status(200).send(res.locals.user._id)
+const server = http.createServer(app);
+
+server.on('error', errorHandler);
+server.on('listening', () => {
+    const address = server.address();
+    const bind = typeof address === 'string' ? 'pipe ' + address : 'port ' + port;
+    console.log('Listening on ' + bind);
 });
-//Routes
-app.use('/api/user', userRoutes);
-app.use('/api/post', postRoutes);
 
-//Server 
-app.listen(process.env.PORT, () => {
-    console.log(`Listening on port ${process.env.PORT}`);
-})
+server.listen(port);
