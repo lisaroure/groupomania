@@ -1,7 +1,7 @@
 const Posts = require('../models/Post');
 
 // Like utilisateur
-exports.likeOrNot = (req, res, next) => {
+exports.likePost = (req, res, next) => {
     if (req.body.like === 1) {
         Posts.updateOne({ _id: req.params.id }, { $inc: { likes: req.body.like++ }, $push: { usersLiked: req.body.userId } })
             .then((post) => res.status(200).json({ message: 'Like enrigistré !' }))

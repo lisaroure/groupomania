@@ -3,8 +3,7 @@ const max = require("../middleware/limit");
 
 const authCtrl = require('../controllers/auth');
 
-// auth
-router.post("/register", authCtrl.signUp);
+router.post('/register', authCtrl.signUp);
 router.post('/login', max.limiter, authCtrl.signIn);
 router.get('/logout', authCtrl.logout);
 
