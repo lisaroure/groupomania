@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
-const bcrypt= require('bcrypt');
+const bcrypt = require('bcrypt');
 
 const userSchema = mongoose.Schema({
     pseudo: {
@@ -43,15 +43,15 @@ const userSchema = mongoose.Schema({
 );
 
 //play function before save into display: 'block',
-userSchema.pre("save", async function(next) {
-    const salt =  await bcrypt.genSalt();
+userSchema.pre("save", async function (next) {
+    const salt = await bcrypt.genSalt();
     this.password = await bcrypt.hash(this.password, salt);
     next();
 })
 
 userSchema.plugin(uniqueValidator);
-userSchema.statics.login = async function(email,password) {
-    const user = await this.findOne({email});
+userSchema.statics.login = async function (email, password) {
+    const user = await this.findOne({ email });
     if (user) {
         const auth = await bcrypt.compare(password, user.password);
         if (auth) {

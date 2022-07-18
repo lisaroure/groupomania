@@ -3,6 +3,7 @@ const app = express();
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const helmet = require("helmet");
+const cors = require('cors');
 
 require('dotenv').config({ path: './config/.env' });
 require('./config/db');
@@ -20,8 +21,21 @@ app.use((req, res, next) => {
     next();
 });
 
+app.use(
+    cors({
+        origin: (origin, callback) => callback(null, true),
+        credentials: true,
+    })
+);
+
 app.use(express.json());
 app.use(helmet({ crossOriginResourcePolicy: false }));
+app.use(
+    cors({
+        origin: (origin, callback) => callback(null, true),
+        credentials: true,
+    })
+);
 
 // Traiter la data en transit d'un point A à un point B
 app.use(cookieParser());

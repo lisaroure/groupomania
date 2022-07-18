@@ -1,13 +1,13 @@
 import React from "react";
 import Log from "../../admin/components/Log";
 
-const Profil = () => {
+function Profil() {
     return (
         <div className="profil-page">
             <div className="log-container">
-                <Log />
+                <Log signin={false} signup={true} />
                 <div class-name="img-container">
-                    <img src="./assets/icon.webp" alt="Logo de Groupomania"></img>
+                    <img src="../styles/assets/icon.webp" alt="Logo de Groupomania"></img>
                 </div>
             </div>
         </div>

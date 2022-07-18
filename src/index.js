@@ -1,22 +1,29 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
-import { BrowserRouter as Router, Route } from 'react-router-dom'
+import ReactDOM from 'react-dom/client'
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
+import Profil from './user/pages/Profil'
 import User from './user'
 import Admin from './admin'
- 
-ReactDOM.render(
+import Header from './admin/components/Header'
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+
+root.render(
     <React.StrictMode>
-       <Router>
-        <h2>Page principale à la racine</h2>
-           <switch>
-            <Route path="/admin">
-                <Admin />
+        <Router>
+            <Header />
+            <Switch>
+                <Route exact path="/">
+                    <Profil />
+                </Route>
+                <Route path="/admin">
+                    <Admin />
                 </Route>
                 <Route path='/user'>
-                    <User/>
+                    <User />
                 </Route>
-               </switch>
-               </Router>
+            </Switch>
+        </Router>
     </React.StrictMode>,
-    document.getElementById('root')
+
 )
