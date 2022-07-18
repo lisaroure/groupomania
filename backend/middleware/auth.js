@@ -3,8 +3,7 @@ const User = require('../models/User');
 
 module.exports.checkUser = (req, res, next) => {
     try {
-        const token = req.cookies.jwt.split(' ')[1];
-        const decodedToken = jwt;
+        const token = req.cookies.jwt;
         if (token) {
             jwt.verify(token, process.env.TOKEN_SECRET, async (err, decodedToken) => {
                 if (err) {
@@ -14,7 +13,6 @@ module.exports.checkUser = (req, res, next) => {
                 } else {
                     let user = await User.findById(decodedToken.id);
                     res.locals.user = user;
-                    console.log(res.locals.user);
                     next();
                 }
             })
