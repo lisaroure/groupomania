@@ -1,0 +1,12 @@
+$colorPrimary: #FD2D01;
+$colorSecondary: #FFD7D7;
+$colorTerciary: #4E5166;
+
+.img-container {
+    text-align: center;
+
+    img {
+        color: $colorPrimary;
+        height: 18em;
+    }
+}
